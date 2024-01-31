@@ -78,13 +78,12 @@ _messages = {
         'default': 'E'
     },
     'E005': {
-        'msg': 'File does not begin with #! or have .sh prefix',
+        'msg': 'File does not begin with #! or have parameters passed to shell',
         'long_msg':
         """
-        This can be useful for tools that use either the interpreter
-        directive or the file-exension to select highlighting mode,
-        syntax mode or determine MIME-type, such as file, gerrit and
-        editors.
+        Scripts must start with shenabg.
+        Instead of passing parameters in shebang - use 'set' inside the script
+        to handle scenarious when script is launched via 'bash <script.sh>'
         """,
         'default': 'W'
     },
@@ -137,11 +136,15 @@ _messages = {
         'default': 'E'
     },
     'E020': {
-        'msg': 'Function declaration not in format ^function name {$',
+        'msg': 'Function declaration not in format ^function name() {',
         'long_msg':
         """
         There are several equivalent ways to define functions in Bash.
-        This check is for consistency.
+        This check is for consistency:
+        - Use only lower case letters, digits and underscore for function
+        names
+        - Print 'function' keyword and braces
+        - Opening bracket can be located on the next line
         """,
         'default': 'E'
     },
@@ -192,6 +195,22 @@ _messages = {
         [ is the POSIX test operator, while [[ is the bash keyword
         comparision operator.  Comparisons such as =~, < and > require
         the use of [[.
+        """,
+        'default': 'E',
+    },
+    'E101': {
+        'msg': 'No copyright information',
+        'long_msg':
+        """
+        File header must contain Copyright License Information.
+        """,
+        'default': 'E',
+    },
+    'E102': {
+        'msg': 'Upper case letters in variable name',
+        'long_msg':
+        """
+        Variables should use lower case only
         """,
         'default': 'E',
     },

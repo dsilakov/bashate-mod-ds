@@ -104,12 +104,14 @@ def check_indents(logical_line, report):
 def check_function_decl(line, report):
     failed = False
     if line.startswith("function"):
-        if not re.search(r'^function [\w-]* \{$', line):
+        # HW specific requirement - we need braces in func decl
+        if not re.search(r'^function [a-z_0-9]+\(\) ?\{?$', line):
             failed = True
     else:
         # catch the case without "function", e.g.
         # things like '^foo() {'
-        if re.search(r'^\s*?\(\)\s*?\{', line):
+        # HW fix for upstream bug https://bugs.launchpad.net/bash8/+bug/2050064
+        if re.search(r'^\S*?\(\)\s*?\{', line):
             failed = True
 
     if failed:
@@ -148,9 +150,18 @@ def check_local_subshell(line, report):
 def check_hashbang(line, filename, report):
     # this check only runs on the first line
     #  maybe this should check for shell?
-    if (not filename.endswith(".sh") and not line.startswith("#!") and
-       not os.path.basename(filename).startswith('.')):
+    if not line.startswith("#!") or "sh -" in line:
         report.print_error(MESSAGES['E005'].msg, line)
+
+def check_var_case(line, report):
+    # We would like all constants to be UPPER_CASE,
+    # variables - lower_case.
+    # Can't check all cases for sure, but let's check local variables
+    match = re.match(r'^\s*local (\w+)', line)
+    if match:
+        name = match.group(1)
+        if re.match(r'[A-Z]', name):
+            report.print_error(MESSAGES['E102'].msg, line)
 
 
 def check_conditional_expression(line, report):
@@ -317,6 +328,7 @@ class BashateRun(object):
             # reset world
             in_heredoc = False
             in_continuation = False
+            is_copyrighted = False
 
             # simple syntax checking, as files can pass style but still cause
             # syntax errors when you try to run them.
@@ -334,6 +346,8 @@ class BashateRun(object):
                 # inside a heredoc this might be part of the syntax of
                 # an embedded script, just ignore that)
                 if line.lstrip().startswith('#') and not in_heredoc:
+                    if "Copyright (c)" in line:
+                        is_copyrighted = True
                     logical_line = [line]
                     check_indents(logical_line, report)
                     continue
@@ -409,12 +423,16 @@ class BashateRun(object):
                     check_local_subshell(line, report)
                     check_bare_arithmetic(line, report)
                     check_conditional_expression(line, report)
+                    check_var_case(line, report)
 
         # finished processing the file
 
         # last line should always end with a newline
         if not line.endswith('\n'):
             report.print_error(MESSAGES['E004'].msg, line)
+
+        if not is_copyrighted:
+            report.print_error(MESSAGES['E101'].msg, line)
 
 
 def main(args=None):
