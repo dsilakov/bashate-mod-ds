@@ -1,6 +1,16 @@
 ===============================
-bashate
+bashate-mod-ds
 ===============================
+
+A modified version of bashate
+
+- modified requirement for function declaration (require brackets)
+- check that local variables are in lower case
+
+========================================
+Description of original bashate is below
+========================================
+
 
 A pep8 equivalent for bash scripts
 
